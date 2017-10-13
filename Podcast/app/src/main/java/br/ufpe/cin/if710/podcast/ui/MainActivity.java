@@ -1,9 +1,12 @@
 package br.ufpe.cin.if710.podcast.ui;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.content.Intent;
+import android.database.Cursor;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.provider.UserDictionary;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -22,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import br.ufpe.cin.if710.podcast.R;
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
@@ -79,7 +83,7 @@ public class MainActivity extends Activity {
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "iniciando...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Iniciando download dos dados...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -92,6 +96,55 @@ public class MainActivity extends Activity {
             } catch (XmlPullParserException e) {
                 e.printStackTrace();
             }
+            return itemList;
+        }
+
+        @Override
+        protected void onPostExecute(List<ItemFeed> feed) {
+            Toast.makeText(getApplicationContext(), "Gravando dados no banco de dados...", Toast.LENGTH_SHORT).show();
+
+            for (ItemFeed feedItem : feed) {
+                Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null, PodcastProviderContract.EPISODE_LINK+"= ?", new String[]{feedItem.getLink()}, null);
+                if (cursor.getCount() == 0) { //Verifica se ja existe no banco de dados
+                    ContentValues cv = new ContentValues();
+                    cv.put(PodcastProviderContract.TITLE, feedItem.getTitle());
+                    cv.put(PodcastProviderContract.DATE, feedItem.getPubDate());
+                    cv.put(PodcastProviderContract.DESCRIPTION, feedItem.getDescription());
+                    cv.put(PodcastProviderContract.EPISODE_LINK, feedItem.getLink());
+                    cv.put(PodcastProviderContract.DOWNLOAD_LINK, feedItem.getDownloadLink());
+                    cv.put(PodcastProviderContract.EPISODE_URI, "");
+
+                    getContentResolver().insert(PodcastProviderContract.EPISODE_LIST_URI, cv);
+                }
+                cursor.close();
+            }
+
+            new GetDataFromDatabaseTask().execute();
+        }
+    }
+
+    private class GetDataFromDatabaseTask extends AsyncTask<String, Void, List<ItemFeed>> {
+        @Override
+        protected void onPreExecute() {
+            Toast.makeText(getApplicationContext(), "Iniciando leitura do banco de dados...", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        protected List<ItemFeed> doInBackground(String... params) {
+            List<ItemFeed> itemList = new ArrayList<>();
+
+            Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null, null, null, null);
+
+            while(cursor.moveToNext()) {
+                String title = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.TITLE));
+                String link = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_LINK));
+                String pubDate = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DATE));
+                String description = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DESCRIPTION));
+                String downloadLink = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
+                itemList.add(new ItemFeed(title, link, pubDate, description, downloadLink));
+            }
+
+            cursor.close();
             return itemList;
         }
 
@@ -118,6 +171,7 @@ public class MainActivity extends Activity {
             /**/
         }
     }
+
 
     //TODO Opcional - pesquise outros meios de obter arquivos da internet
     private String getRssFeed(String feed) throws IOException {
