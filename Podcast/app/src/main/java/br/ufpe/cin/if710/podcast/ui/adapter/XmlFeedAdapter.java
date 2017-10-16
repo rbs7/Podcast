@@ -2,15 +2,22 @@ package br.ufpe.cin.if710.podcast.ui.adapter;
 
 import java.io.Serializable;
 import java.util.List;
+
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
+import android.support.v4.content.ContextCompat;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
+import br.ufpe.cin.if710.podcast.services.DownloadIntentService;
 import br.ufpe.cin.if710.podcast.ui.EpisodeDetailActivity;
 
 public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
@@ -52,16 +59,18 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
     static class ViewHolder {
         TextView item_title;
         TextView item_date;
+        Button item_action;
     }
 
     @Override
     public View getView(final int position, View convertView, ViewGroup parent) {
-        ViewHolder holder;
+        final ViewHolder holder;
         if (convertView == null) {
             convertView = View.inflate(getContext(), linkResource, null);
             holder = new ViewHolder();
             holder.item_title = (TextView) convertView.findViewById(R.id.item_title);
             holder.item_date = (TextView) convertView.findViewById(R.id.item_date);
+            holder.item_action = (Button) convertView.findViewById(R.id.item_action);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -72,9 +81,23 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getContext(), EpisodeDetailActivity.class);
-                intent.putExtra("ItemFeed", (Serializable) getItem(position));
-                getContext().startActivity(intent);
+            Intent intent = new Intent(getContext(), EpisodeDetailActivity.class);
+            intent.putExtra("ItemFeed", (Serializable) getItem(position));
+            getContext().startActivity(intent);
+            }
+        });
+
+        holder.item_action.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                    Intent intent = new Intent(getContext(), DownloadIntentService.class);
+                    intent.putExtra("ItemFeed", (Serializable) getItem(position));
+                    getContext().startService(intent);
+                    Toast.makeText(getContext(), "Iniciando download...", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(getContext(), "Permissão negada", Toast.LENGTH_SHORT).show();
+                }
             }
         });
 
