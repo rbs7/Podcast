@@ -78,6 +78,14 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_title.setText(getItem(position).getTitle());
         holder.item_date.setText(getItem(position).getPubDate());
 
+        System.out.println();
+
+        if (getItem(position).getFileUri().equals("")) {
+            holder.item_action.setText(R.string.action_download);
+        } else {
+            holder.item_action.setText(R.string.action_play);
+        }
+
         holder.item_title.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -90,13 +98,18 @@ public class XmlFeedAdapter extends ArrayAdapter<ItemFeed> {
         holder.item_action.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
-                    Intent intent = new Intent(getContext(), DownloadIntentService.class);
-                    intent.putExtra("ItemFeed", (Serializable) getItem(position));
-                    getContext().startService(intent);
-                    Toast.makeText(getContext(), "Iniciando download...", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(getContext(), "Permissão negada", Toast.LENGTH_SHORT).show();
+                if (holder.item_action.getText().toString().equals(R.string.action_play)) {
+                    //TODO: player
+                } else { //baixar
+                    if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.WRITE_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
+                        Intent intent = new Intent(getContext(), DownloadIntentService.class);
+                        intent.putExtra("ItemFeed", (Serializable) getItem(position));
+                        getContext().startService(intent);
+                        Toast.makeText(getContext(), "Iniciando download...", Toast.LENGTH_SHORT).show();
+                        holder.item_action.setText(R.string.action_play);
+                    } else {
+                        Toast.makeText(getContext(), "Permissão negada", Toast.LENGTH_SHORT).show();
+                    }
                 }
             }
         });

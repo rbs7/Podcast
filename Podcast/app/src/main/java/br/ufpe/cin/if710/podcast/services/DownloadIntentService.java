@@ -2,11 +2,13 @@ package br.ufpe.cin.if710.podcast.services;
 
 import android.Manifest;
 import android.app.IntentService;
+import android.content.ContentValues;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.LocalBroadcastManager;
 import android.util.Log;
 
 import java.io.BufferedOutputStream;
@@ -17,6 +19,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
+import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 
 /**
@@ -25,6 +28,7 @@ import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 
 public class DownloadIntentService extends IntentService {
     private static final String TAG = DownloadIntentService.class.getSimpleName(); //Nome da classe
+    public static final String DOWNLOAD_COMPLETE = "br.ufpe.cin.if710.podcast.intent.action.DOWNLOAD_COMPLETE";
 
     public DownloadIntentService() {
         super(TAG);
@@ -63,9 +67,15 @@ public class DownloadIntentService extends IntentService {
 
                 Log.v(TAG, "Download concluído");
 
-                //TODO: Gravar no banco da dados
+                //Gravar no banco da dados
+                ContentValues contentValues = new ContentValues();
+                contentValues.put(PodcastProviderContract.EPISODE_URI, output.getPath());
+                getContentResolver().update(PodcastProviderContract.EPISODE_LIST_URI, contentValues, PodcastProviderContract.DOWNLOAD_LINK +"=?" , new String[]{item.getTitle()});
 
-                //TODO: Dar um broadcast
+                //Dar um broadcast
+                Intent intent2 = new Intent(DOWNLOAD_COMPLETE);
+                intent2.putExtra("ItemFeed", item);
+                LocalBroadcastManager.getInstance(this).sendBroadcast(intent);
 
             } catch (IOException e) {
                 Log.e(getClass().getName(), "Exception durante download", e);

@@ -56,8 +56,11 @@ public class PodcastProvider extends ContentProvider {
     @Override
     public int update(Uri uri, ContentValues values, String selection,
                       String[] selectionArgs) {
-        // TODO: Implement this to handle requests to update one or more rows.
-        throw new UnsupportedOperationException("Not yet implemented");
+        if (isEpisodiosUri(uri)) {
+            return dbHelper.getWritableDatabase().update(PodcastDBHelper.DATABASE_TABLE,values,selection,selectionArgs);
+        } else {
+            return 0;
+        }
     }
 
     private boolean isEpisodiosUri (Uri uri) {

@@ -147,7 +147,8 @@ public class MainActivity extends Activity {
                 String pubDate = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DATE));
                 String description = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DESCRIPTION));
                 String downloadLink = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.DOWNLOAD_LINK));
-                itemList.add(new ItemFeed(title, link, pubDate, description, downloadLink));
+                String fileUri = cursor.getString(cursor.getColumnIndex(PodcastProviderContract.EPISODE_URI));
+                itemList.add(new ItemFeed(title, link, pubDate, description, downloadLink, fileUri));
             }
 
             cursor.close();
