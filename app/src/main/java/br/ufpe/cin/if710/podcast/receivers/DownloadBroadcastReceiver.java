@@ -12,6 +12,6 @@ import android.util.Log;
 public class DownloadBroadcastReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
-        Log.i("Receiver", "Broadcast recebido!!!!!!!!");
+        Log.v("Receiver", "Broadcast recebido!!!!!!!!");
     }
 }

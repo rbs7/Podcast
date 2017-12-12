@@ -33,15 +33,6 @@
             android:name=".services.DownloadIntentService"
             android:enabled="true"
             android:exported="true" />
-
-        <receiver
-            android:name=".receivers.DownloadBroadcastReceiver"
-            android:enabled="true"
-            android:exported="true" >
-            <intent-filter>
-                <action android:name="br.ufpe.cin.if710.podcast.intent.action.DOWNLOAD_COMPLETE" />
-            </intent-filter>
-        </receiver>
     </application>
 
 </manifest>
