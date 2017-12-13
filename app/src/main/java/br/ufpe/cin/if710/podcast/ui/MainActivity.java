@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
     private final String RSS_FEED = "http://feeds.feedburner.com/ProjetoXPodcasts?format=xml";
     //TODO teste com outros links de podcast
 
+    public final Context self = this;
+
     private ListView items;
 
     private BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -183,7 +185,7 @@ public class MainActivity extends Activity {
             Toast.makeText(getApplicationContext(), "terminando...", Toast.LENGTH_SHORT).show();
 
             //Adapter Personalizado
-            XmlFeedAdapter adapter = new XmlFeedAdapter(getApplicationContext(), R.layout.itemlista, feed);
+            XmlFeedAdapter adapter = new XmlFeedAdapter(self, R.layout.itemlista, feed);
 
             //atualizar o list view
             items.setAdapter(adapter);
