@@ -4,6 +4,7 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.ContentValues;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
@@ -13,6 +14,7 @@ import android.os.Bundle;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.content.LocalBroadcastManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
@@ -32,18 +34,26 @@ import br.ufpe.cin.if710.podcast.R;
 import br.ufpe.cin.if710.podcast.db.PodcastProviderContract;
 import br.ufpe.cin.if710.podcast.domain.ItemFeed;
 import br.ufpe.cin.if710.podcast.domain.XmlFeedParser;
-import br.ufpe.cin.if710.podcast.receivers.DownloadBroadcastReceiver;
 import br.ufpe.cin.if710.podcast.ui.adapter.XmlFeedAdapter;
 
 public class MainActivity extends Activity {
 
     //ao fazer envio da resolucao, use este link no seu codigo!
-    private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
+    //private final String RSS_FEED = "http://leopoldomt.com/if710/fronteirasdaciencia.xml";
+    private final String RSS_FEED = "http://feeds.feedburner.com/ProjetoXPodcasts?format=xml";
     //TODO teste com outros links de podcast
 
     private ListView items;
 
-    private BroadcastReceiver receiver = new DownloadBroadcastReceiver();
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            Log.v("Receiver", "Broadcast recebido!!!!!!!!");
+            Toast.makeText(context, "Download concluído", Toast.LENGTH_SHORT).show();
+
+            new GetDataFromDatabaseTask().execute();
+        }
+    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {

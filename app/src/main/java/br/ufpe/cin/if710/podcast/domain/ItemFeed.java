@@ -9,6 +9,7 @@ public class ItemFeed implements Serializable {
     private final String description;
     private final String downloadLink;
     private final String fileUri;
+    private int downloadStatus;
 
 
     public ItemFeed(String title, String link, String pubDate, String description, String downloadLink, String fileUri) {
@@ -18,6 +19,7 @@ public class ItemFeed implements Serializable {
         this.description = description;
         this.downloadLink = downloadLink;
         this.fileUri = fileUri;
+        this.downloadStatus = 0;
     }
 
     public String getTitle() {
@@ -42,6 +44,14 @@ public class ItemFeed implements Serializable {
 
     public String getFileUri() {
         return fileUri;
+    }
+
+    public int getDownloadStatus() {
+        return downloadStatus;
+    }
+
+    public void setDownloadStatus(int status) {
+        downloadStatus = status;
     }
 
     @Override

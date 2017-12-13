@@ -79,12 +79,13 @@ public class DownloadIntentService extends IntentService {
                 }
                 URL url = new URL(item.getDownloadLink());
                 HttpURLConnection c = (HttpURLConnection) url.openConnection();
+                c.connect();
                 int fileLength = c.getContentLength();
                 FileOutputStream fos = new FileOutputStream(output.getPath());
                 BufferedOutputStream out = new BufferedOutputStream(fos);
                 try {
                     InputStream in = c.getInputStream();
-                    byte[] buffer = new byte[8192];
+                    byte[] buffer = new byte[8*1024];
                     int len = 0;
                     int incr = 0;
                     int perc = 0;
@@ -115,16 +116,16 @@ public class DownloadIntentService extends IntentService {
                 //Gravar no banco da dados
                 ContentValues contentValues = new ContentValues();
                 contentValues.put(PodcastProviderContract.EPISODE_URI, output.getPath());
-                getContentResolver().update(PodcastProviderContract.EPISODE_LIST_URI, contentValues, PodcastProviderContract.DOWNLOAD_LINK +"=?" , new String[]{item.getTitle()});
+                getContentResolver().update(PodcastProviderContract.EPISODE_LIST_URI, contentValues, PodcastProviderContract.DOWNLOAD_LINK +"=?" , new String[]{item.getDownloadLink()});
+
+                //Remove a progress bar
+                builder.setContentText("Download concluído.").setProgress(0,0,false);
+                notificationManager.notify(NOTIFICATION_ID, builder.build());
 
                 //Dar um broadcast
                 Intent intent2 = new Intent(DOWNLOAD_COMPLETE);
                 intent2.putExtra("ItemFeed", item);
                 LocalBroadcastManager.getInstance(this).sendBroadcast(intent2);
-
-                //Remove a progress bar
-                builder.setContentText("Download concluído.").setProgress(0,0,false);
-                notificationManager.notify(NOTIFICATION_ID, builder.build());
 
             } catch (IOException e) {
                 Log.e(getClass().getName(), "Exception durante download", e);
