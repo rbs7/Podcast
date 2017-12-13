@@ -108,7 +108,9 @@ public class MainActivity extends Activity {
     protected void onStop() {
         super.onStop();
         XmlFeedAdapter adapter = (XmlFeedAdapter) items.getAdapter();
-        adapter.clear();
+        if (adapter != null) {
+            adapter.clear();
+        }
     }
 
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
