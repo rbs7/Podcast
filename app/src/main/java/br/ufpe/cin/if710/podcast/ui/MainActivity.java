@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.AsyncTask;
@@ -116,17 +117,24 @@ public class MainActivity extends Activity {
     private class DownloadXmlTask extends AsyncTask<String, Void, List<ItemFeed>> {
         @Override
         protected void onPreExecute() {
-            Toast.makeText(getApplicationContext(), "Iniciando download dos dados...", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), "Preparando feed...", Toast.LENGTH_SHORT).show();
         }
 
         @Override
         protected List<ItemFeed> doInBackground(String... params) {
             List<ItemFeed> itemList = new ArrayList<>();
+
             try {
-                itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+                if (isFeedModified(params[0])) {
+                    try {
+                        itemList = XmlFeedParser.parse(getRssFeed(params[0]));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } catch (XmlPullParserException e) {
+                        e.printStackTrace();
+                    }
+                }
             } catch (IOException e) {
-                e.printStackTrace();
-            } catch (XmlPullParserException e) {
                 e.printStackTrace();
             }
             return itemList;
@@ -134,7 +142,9 @@ public class MainActivity extends Activity {
 
         @Override
         protected void onPostExecute(List<ItemFeed> feed) {
-            Toast.makeText(getApplicationContext(), "Gravando dados no banco de dados...", Toast.LENGTH_SHORT).show();
+            if (!feed.isEmpty()) {
+                Toast.makeText(getApplicationContext(), "Gravando dados no banco de dados...", Toast.LENGTH_SHORT).show();
+            }
 
             for (ItemFeed feedItem : feed) {
                 Cursor cursor = getContentResolver().query(PodcastProviderContract.EPISODE_LIST_URI, null, PodcastProviderContract.EPISODE_LINK+"= ?", new String[]{feedItem.getLink()}, null);
@@ -228,5 +238,33 @@ public class MainActivity extends Activity {
             }
         }
         return rssFeed;
+    }
+
+    private boolean isFeedModified(String feed) throws IOException {
+        boolean ans;
+
+        URL url = new URL(feed);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+        SharedPreferences sharedPref = getPreferences(Context.MODE_PRIVATE);
+        String lastMod = sharedPref.getString("lastMod", "");
+        if (lastMod.isEmpty()) { //Primeira execucao
+            SharedPreferences.Editor editor = sharedPref.edit();
+            editor.putString("lastMod", conn.getHeaderField("Last-Modified"));
+            editor.apply();
+            ans = true;
+        } else {
+            conn.setRequestProperty("If-Modified-Since", lastMod);
+            if (conn.getResponseCode() == 304) {
+                ans = false;
+            } else {
+                SharedPreferences.Editor editor = sharedPref.edit();
+                editor.putString("lastMod", conn.getHeaderField("Last-Modified"));
+                editor.apply();
+                ans = true;
+            }
+        }
+
+        return ans;
     }
 }
