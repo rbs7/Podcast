@@ -16,7 +16,7 @@ Estes três eventos são os que mais consomem tempo de CPU no app. Porém, eles 
 
 ### Boas práticas adotadas
 
-TODO: Para evitar esse desperdício de CPU, o download da lista de episódios agora só é feito se a lista de episódios no servidor tiver sido modificada. Isso é feito observando o campo Last-Modified do cabeçalho HTTP. Isso também se reflete em economia de banda. Observar o arquivo bandwidth.md para mais detalhes
+Para evitar esse desperdício de CPU, o download da lista de episódios agora só é feito se a lista de episódios no servidor tiver sido modificada. Isso é feito observando o campo Last-Modified do cabeçalho HTTP. Isso também se reflete em economia de banda. Observar o arquivo bandwidth.md para mais detalhes
 
 ![Imagem do Android Profiler - Last-Modified](https://github.com/rbs7/Podcast/blob/master/relatorios_assets/AndroidProfilerCPU2.png?raw=true)
 
