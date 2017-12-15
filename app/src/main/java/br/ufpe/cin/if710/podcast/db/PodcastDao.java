@@ -1,0 +1,36 @@
+package br.ufpe.cin.if710.podcast.db;
+
+import android.arch.lifecycle.LiveData;
+import android.arch.persistence.room.Dao;
+import android.arch.persistence.room.Delete;
+import android.arch.persistence.room.Insert;
+import android.arch.persistence.room.OnConflictStrategy;
+import android.arch.persistence.room.Query;
+import android.arch.persistence.room.Update;
+import android.database.Cursor;
+
+import java.util.List;
+
+@Dao
+public interface PodcastDao {
+    @Query("SELECT * FROM Podcast")
+    LiveData<List<Podcast>> getListPodcastLD();
+
+    @Query("SELECT * FROM Podcast")
+    Cursor getListPodcast();
+
+    @Query("SELECT * FROM Podcast WHERE link=:link")
+    LiveData<Podcast> getPodcastLD(String link);
+
+    @Query("SELECT * FROM Podcast WHERE link=:link")
+    Cursor getPodcast(String link);
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    void addPodcast(Podcast podcast);
+
+    @Delete
+    void deletePodcast(Podcast podcast);
+
+    @Update
+    void updatePodcast(Podcast podcast);
+}

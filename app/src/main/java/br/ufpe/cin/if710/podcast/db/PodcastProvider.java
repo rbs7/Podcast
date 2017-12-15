@@ -2,6 +2,7 @@ package br.ufpe.cin.if710.podcast.db;
 
 import android.content.ContentProvider;
 import android.content.ContentValues;
+import android.content.Context;
 import android.database.Cursor;
 import android.net.Uri;
 
@@ -27,6 +28,15 @@ public class PodcastProvider extends ContentProvider {
     @Override
     public Uri insert(Uri uri, ContentValues values) {
         if (isEpisodiosUri(uri)) {
+            //Room
+            /*final Context context = getContext();
+            if (context == null) {
+                return null;
+            }
+            PodcastDatabase.getInstance(this.getContext()).podcastDao()
+                    .addPodcast(Podcast.fromContentValues(values));*/
+
+            //DBHelper
             long id = dbHelper.getWritableDatabase().insert(PodcastDBHelper.DATABASE_TABLE,null,values);
             return Uri.withAppendedPath(PodcastProviderContract.EPISODE_LIST_URI,Long.toString(id));
         } else {
